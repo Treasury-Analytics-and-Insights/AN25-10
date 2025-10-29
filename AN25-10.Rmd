@@ -1,0 +1,2018 @@
+---
+title: "Transnationalism over the lifecourse of New Zealand born citizens"
+output: html_document
+date: "2025-31-10"
+---
+
+## Analytical Note 25/10
+### Tim Hughes and Sarah Crichton
+
+JEL Classifications: F22
+
+Staff and teams are writing in their individual capacity and the views are not necessarily a "Treasury" view. Please read our disclaimer. This work makes use of Stats NZ's Integrated Data Infrastructure (IDI), please also read the IDI disclaimer.^[Access to the data used in this study was provided by Stats NZ under conditions designed to give effect to the security and confidentiality provisions of the Data and Statistics Act 2022. The results presented in this study are the work of the author, not Stats NZ or individual data suppliers.
+These results are not official statistics. They have been created for research purposes from the Integrated Data Infrastructure (IDI) which is carefully managed by Stats NZ. For more information about the IDI please visit https://www.stats.govt.nz/integrated-data/.
+The results are based in part on tax data supplied by Inland Revenue to Stats NZ under the Tax Administration Act 1994 for statistical purposes. Any discussion of data limitations or weaknesses is in the context of using the IDI for statistical purposes, and is not related to the data’s ability to support Inland Revenue’s core operational requirements.
+]
+
+Acknowledgements: Support from Tod Wright, Jacques Poot, Louis Warren, Kim Dunstan, Gerald Minnee, David Rea, David Scott, Luke Symes, Amy Cruickshank and Hannes Diener is gratefully acknowledged.
+
+The code used to produce the statistics used in this report can be accessed at the following GitHub address: https://github.com/Treasury-Analytics-and-Insights/AN25-10 
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+
+library(data.table)
+library(ggplot2)
+library(readxl)
+library(reactable)
+
+
+tsy_palette12 <- c(
+  rgb(122, 143, 34, maxColorValue = 255),
+  rgb(62, 101, 50, maxColorValue = 255),
+  rgb(0, 113, 136, maxColorValue = 255),
+  rgb(0, 79, 103, maxColorValue = 255),
+  rgb(239, 150, 108, maxColorValue = 255),
+  rgb(241, 164, 45, maxColorValue = 255),
+  rgb(188, 214, 81, maxColorValue = 255),
+  rgb(0, 181, 228, maxColorValue = 255),
+  rgb(169, 167, 165, maxColorValue = 255),
+  rgb(62, 64, 58, maxColorValue = 255),
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(0, 131, 172, maxColorValue = 255)
+)
+
+tsy_palette11 <- c(
+  rgb(62, 101, 50, maxColorValue = 255),
+  rgb(0, 113, 136, maxColorValue = 255),
+  rgb(0, 79, 103, maxColorValue = 255),
+  rgb(239, 150, 108, maxColorValue = 255),
+  rgb(241, 164, 45, maxColorValue = 255),
+  rgb(188, 214, 81, maxColorValue = 255),
+  rgb(0, 181, 228, maxColorValue = 255),
+  rgb(169, 167, 165, maxColorValue = 255),
+  rgb(62, 64, 58, maxColorValue = 255),
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(0, 131, 172, maxColorValue = 255)
+)
+
+tsy_palette10 <- c(
+  rgb(0, 113, 136, maxColorValue = 255),
+  rgb(0, 79, 103, maxColorValue = 255),
+  rgb(239, 150, 108, maxColorValue = 255),
+  rgb(241, 164, 45, maxColorValue = 255),
+  rgb(188, 214, 81, maxColorValue = 255),
+  rgb(0, 181, 228, maxColorValue = 255),
+  rgb(169, 167, 165, maxColorValue = 255),
+  rgb(62, 64, 58, maxColorValue = 255),
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(0, 131, 172, maxColorValue = 255)
+)
+
+tsy_palette9 <- c(
+  rgb(0, 79, 103, maxColorValue = 255),
+  rgb(239, 150, 108, maxColorValue = 255),
+  rgb(241, 164, 45, maxColorValue = 255),
+  rgb(188, 214, 81, maxColorValue = 255),
+  rgb(0, 181, 228, maxColorValue = 255),
+  rgb(169, 167, 165, maxColorValue = 255),
+  rgb(62, 64, 58, maxColorValue = 255),
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(0, 131, 172, maxColorValue = 255)
+)
+
+tsy_palette8 <- c(
+  rgb(239, 150, 108, maxColorValue = 255),
+  rgb(241, 164, 45, maxColorValue = 255),
+  rgb(188, 214, 81, maxColorValue = 255),
+  rgb(0, 181, 228, maxColorValue = 255),
+  rgb(169, 167, 165, maxColorValue = 255),
+  rgb(62, 64, 58, maxColorValue = 255),
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(0, 131, 172, maxColorValue = 255)
+)
+
+tsy_palette7 <- c(
+  rgb(241, 164, 45, maxColorValue = 255),
+  rgb(188, 214, 81, maxColorValue = 255),
+  rgb(0, 181, 228, maxColorValue = 255),
+  rgb(169, 167, 165, maxColorValue = 255),
+  rgb(62, 64, 58, maxColorValue = 255),
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(0, 131, 172, maxColorValue = 255)
+)
+
+tsy_palette6 <- c(
+  rgb(188, 214, 81, maxColorValue = 255),
+  rgb(0, 181, 228, maxColorValue = 255),
+  rgb(169, 167, 165, maxColorValue = 255),
+  rgb(62, 64, 58, maxColorValue = 255),
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(0, 131, 172, maxColorValue = 255)
+)
+
+tsy_palette6_rev <- c(
+  rgb(0, 131, 172, maxColorValue = 255),
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(62, 64, 58, maxColorValue = 255),
+  rgb(169, 167, 165, maxColorValue = 255),
+  rgb(0, 181, 228, maxColorValue = 255),
+  rgb(188, 214, 81, maxColorValue = 255)
+
+)
+
+tsy_palette5 <- c(
+  rgb(0, 181, 228, maxColorValue = 255),
+  rgb(169, 167, 165, maxColorValue = 255),
+  rgb(62, 64, 58, maxColorValue = 255),
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(0, 131, 172, maxColorValue = 255)
+)
+
+tsy_palette4 <- c(
+  rgb(169, 167, 165, maxColorValue = 255),
+  rgb(62, 64, 58, maxColorValue = 255),
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(0, 131, 172, maxColorValue = 255)
+)
+
+
+tsy_palette3 <- c(
+  rgb(62, 64, 58, maxColorValue = 255),
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(0, 131, 172, maxColorValue = 255)
+)
+
+tsy_palette2 <- c(
+  rgb(103, 168, 84, maxColorValue = 255),
+  rgb(0, 131, 172, maxColorValue = 255)
+)
+
+read1 <- read_excel("C:/Users/HughesT/R/NZ_Born/Data for release (confidentialised).xlsx"
+                    , sheet = "Data"
+                    ,col_types="text")
+
+setDT(read1)
+
+read2 <- read_excel("C:/Users/HughesT/R/NZ_Born/Data for release (confidentialised).xlsx"
+                    , sheet = "Mortality weights"
+                    ,col_types="text")
+
+setDT(read2)
+
+read3 <- read_excel("C:/Users/HughesT/R/NZ_Born/Data for release (confidentialised).xlsx"
+                    , sheet = "Cost weights"
+                    ,col_types="numeric")
+
+setDT(read3)
+
+```
+
+## Executive Summary
+
+This paper explores the fiscal implications of transnationalism among New Zealand-born citizens. For every calendar year between 1999 and 2024, the IDI allows us to identify how many days NZ-born citizens spend in New Zealand or elsewhere. 
+
+As the lifecourse progresses, many New Zealanders choose to live elsewhere. Often this is temporary, with about 40% of NZ-born emigrants returning to live in New Zealand again, usually within a few years. But many others leave permanently. By the age of 30, 25-30% of each birth cohort is living elsewhere. 
+
+Emigration of the New Zealand born represents only about a third of total emigration – the rest is emigration of the foreign-born, including foreign-born citizens of New Zealand. Emigration of the foreign-born will be considered in a future paper.
+
+Emigration of the NZ-born is most common in young adulthood - about half of those emigrating each year are in their twenties or thirties. But emigration in one’s twenties is also the most likely to be temporary. Emigration in childhood and later adulthood is more likely to be permanent. Emigration and return migration are also strongly associated with both ethnicity and qualification level, but not with gender.
+
+In general, the most highly qualified are most likely to emigrate, but also the most likely to return. This difference in emigration between people with lower and higher qualifications exists within all ethnic groups, but the difference is greatest for NZ Europeans, and smallest for Pacific peoples.
+Over time, emigration of successive birth cohorts has led to a substantial diaspora. We estimate that the NZ-born diaspora has grown over time to about 915,000 people, about two-thirds of whom are living in Australia. The diaspora is older than the New Zealand population, and growing older over time. NZ-born Asian and Pacific people have higher rates of diasporic membership than Māori and NZ Europeans.
+
+From a fiscal perspective, the diaspora represents both a contingent asset and a contingent liability. Return migration from the diaspora of those with overseas experience is an important source of fiscal revenue. For example in 2023, among 40-44 year-old NZ-born residents, those who had taken at least a short OE made up 35% of the residents, but paid 42% of the personal tax among this group. These figures illustrate how future Government revenues are dependent at least in part on ensuring New Zealanders who choose to pursue an OE find returning home an attractive proposition.
+
+The diaspora also represents a contingent liability, to the extent that New Zealanders with rights of return also have rights to public services such as health and aged care should they choose to return. Return is uncommon later in life, suggesting that retirement back to New Zealand is rare among those who have settled elsewhere. However, rates of return increased during COVID among older and especially younger New Zealanders. This suggests that the fiscal risks of certain adverse events, especially global events, may be exacerbated if those events result in higher rates of return from the diaspora.
+ 
+
+## Background and purpose
+
+This is one in a series of papers exploring the fiscal implications of transnationalism. It uses the transnational dataset developed in the IDI for this purpose, the methodology for which was described in Analytical Note 25/09.
+
+The purpose of these papers is to support the Treasury’s (2025) Long-term Fiscal Statement. High levels of net migration since the Treasury’s first statement in 2006 have materially affected the aggregate fiscal position. Understanding the drivers of inward and outward migration will be important for projecting fiscal sustainability into the future. Patterns of inward and outward migration also have important distributional consequences over the lifecourse. Uncovering these patterns can help understand the burden of fiscal benefits and responsibilities across time, and inform consideration of reform options.
+
+This note focuses on people granted citizenship upon birth in New Zealand. Citizenship was granted automatically to anyone born in New Zealand prior to 2006. From 1 January 2006, citizenship has been granted to those born in New Zealand if at least one parent is a New Zealand citizen or is entitled to live in New Zealand indefinitely at the time of birth. 
+
+This paper starts by considering the characteristics of the diaspora, then examines flows into the diaspora (emigration) over the lifecourse. We then consider return migration, and conclude by considering the fiscal implications of these patterns.
+
+All data is derived from the IDI unless otherwise noted.
+  
+## Glossary of terms
+
+This paper draws on concepts developed and defined in AN25/09. Key terms are defined here for clarity and ease of access.
+
+* (De facto) Resident (in NZ): someone who has spent 9 or more months in New Zealand in a calendar year.
+
+* Resident Permanent Resident: someone who has spent 9 or more months in New Zealand in a calendar year and who holds a Permanent Resident visa.
+
+*	Diasporic Permanent Resident: someone spending less than 9 months in NZ in a calendar year but who holds a Permanent Resident visa and so could return at any time.
+
+*	Resident Birth Citizen: someone spending 9+ months in NZ in a calendar year who has citizenship via birth.
+
+*	Diasporic Birth Citizen: someone spending less than 9 months in NZ in a calendar year who has citizenship via birth.
+
+*	Resident Non-Birth Citizen: someone spending 9+ months in NZ in a calendar year who has crossed the border in the past with a NZ passport, but is not a birth citizen.
+
+*	Diasporic Non-Birth Citizen: someone spending less than 9 months in NZ in a calendar year who has crossed the border in the past with a NZ passport, but is not a birth citizen.
+
+## The diaspora of birth citizens
+
+### Characteristics of the diasporic 'stock' over time
+
+New Zealand has a substantial diaspora. In this note, we estimate the size of the diaspora by counting the number of people known to have rights to return to New Zealand who are currently overseas. This raw count is adjusted downwards by using age-specific mortality rates from the Stats NZ life tables. This accounts for the fact that an unknown proportion of people not in New Zealand will be deceased.
+
+The diaspora can be divided into three groups. This report will focus on those New Zealanders with citizenship deriving from birth in this country. As the birth records in the IDI go back to 1840, we have complete coverage of this group.
+
+A second group is non-birth citizens. This group includes those born overseas to New Zealand citizens, who can claim citizenship by descent. It also includes citizens living in realm countries (such as the Cook Islands) if they were not born in New Zealand, and migrants who were granted citizenship in New Zealand. As discussed in the accompanying methodological note, there is only partial coverage of this group in the IDI, and they are not focused on in this paper.
+
+The third group is people who have been granted residence or permanent residence but who have moved overseas. All holders of permanent resident visas and some holders of resident visas have automatic rights of return, but this group will not be focused on either.
+
+Although this note focuses on diasporic birth citizens, many others overseas also have rights to return. There are nearly a million disaporic birth citizens, but the true number of people living overseas with rights to return will be much larger. The true number is unknown; the number of diasporic non-birth citizens shown in Figure 1 will be an underestimate of the true number. Only those non-birth citizens to have returned to NZ with a NZ passport at some point between 1999 and 2024 are included.
+
+The IDI-based estimate of about 915,000 diasporic birth citizens in 2024, up from about 660,000 in 1999 is towards the higher end of previous estimates produced using different methods. Treasury estimated the size of the NZ-born diaspora as about 460,000 people in 2001 (Bryant and Law, 2004) using census data from various countries. However, only 19 countries were included and so the resulting estimate was likely biased downwards. More recently, the Department of Labour (2012) estimated the New Zealand diaspora as between 0.7 and 1 million people. Using the OECD DIOC database^[Data on Immigrants in OECD countries], Carey (2019) reported the number of New Zealanders living in other OECD countries to be 583,000 in 2015/16.
+
+The IDI data does not shed light on where members of the diaspora are living. However, the Australian Bureau of Statistics recently reported that at the end of June 2024, an estimated 618,000 New Zealand-born people were living in Australia, with a plurality (37%) in Queensland. In other words, perhaps two-thirds of the diaspora is in Australia. The OECD database suggests that after Australia, the most common residence countries for the NZ-born diaspora are the United Kingdom, United States and Canada.
+
+The age distribution of the (known) diaspora is skewed upwards relative to that of birth citizens (Figure 2) and is steadily growing older over time (Figure 3). In 2004, the average age of the diaspora was 39, increasing to 44 in 2024. As detailed in the next section, this may suggest lower return rates in future. 
+
+Diaspora membership varies by ethnicity, with NZ-born Asian and Pacific New Zealanders and especially MELAA people, having relatively higher rates of membership in the diaspora, and NZ-born European and Māori having lower rates of diasporic membership. The proportion of those born in NZ who are in the diaspora has grown over time for all ethnic groups (Figure 4). Diasporic membership has also grown over time for both men and women. Women have consistently had higher rates of diasporic membership, but with the gap shrinking from 1.9 percentage points in 1999 to 0.8 percentage points in 2024 (Figure 5).
+
+#### Figures 1-5 {.tabset}
+
+##### Figure 1
+
+```{r Fig1, echo=FALSE}
+
+read1.1 <- read1[table_nbr==1
+               &measure1!='S'
+               &measure1!='NULL'
+               &var2_value %in% c('Diasporic Birth Citizen'
+                                  ,'Diasporic Non-Birth Citizen'
+                                  ,'Diasporic Permanent Resident'
+                                  )
+               ,.(count=(as.numeric(measure1)/1000000)
+                  , transcat=var2_value
+                  , age=var3_value
+                  , yr=as.numeric(var1_value))]
+
+read1.2 <- read1.1[read2,on=.(age)]
+
+plot1 <- read1.2[,.(total=sum(count*as.numeric(male_mort)))
+                 ,by=.(transcat
+                       ,yr)]
+
+plot1$transcat <- factor(plot1$transcat, levels = c('Diasporic Permanent Resident','Diasporic Non-Birth Citizen','Diasporic Birth Citizen'))
+
+
+ggplot(plot1, aes(fill=transcat, x=yr, y=total)) +
+  geom_bar(position= "stack", stat="identity")+
+  labs(title = "Figure 1: The (known) diaspora is substantial"
+       , x="Year", y="N", subtitle = "Millions of people not resident in New Zealand
+with known rights to return")+
+  theme_minimal()+
+  scale_fill_manual(name = "Status", values=tsy_palette3)
+
+```
+
+##### Figure 2
+
+```{r Fig2, echo=FALSE}
+
+read1.1 <- read1[table_nbr==1&measure1!='S'
+               &measure1!='NULL'
+               &as.numeric(var3_value)<=110
+               &var1_value=='2023'
+               &var3_value !='NULL'
+               &var2_value %in% c('Diasporic Birth Citizen','Resident Birth Citizen')
+               ,.(yr=as.numeric(var1_value)
+                  ,age=var3_value
+                  ,transcat=var2_value
+                  ,count=as.numeric(measure1)/1000)]
+
+read1.2 <- read2[read1.1, on=.(age)]
+
+read1.3 <- read1.2[,.(yr,transcat,age=as.numeric(age),count,wght_count=count*as.numeric(male_mort))]
+
+read1.4 <- read1.3[is.na(count)==FALSE
+                   ,.(total=sum(count)
+                      ,wght_total=sum(wght_count)
+                   )
+                   ,by=.(transcat,age,yr)]
+
+plot1 <- read1.4[,.(transcat,yr,age,tot=fcase(substr(transcat,1,1)=='D', wght_total
+                                                    , substr(transcat,1,1)=='R',total
+                ))]
+
+ggplot(plot1, aes(fill=transcat, x=age, y=tot)) +
+  geom_bar(position= "dodge", stat="identity")+
+  labs(title = "Figure 2: Diasporic birth citizens are older on average"
+       , x="Age", y="N", subtitle = "Thousands of people in 2023")+
+  theme_minimal()+
+  scale_fill_manual(name = "Status", values=tsy_palette2)
+
+```
+
+##### Figure 3
+
+```{r Fig3, echo=FALSE}
+
+read1.1 <- read1[table_nbr==1
+               &measure1!='S'
+               &measure1!='NULL'
+               &var1_value %in%c(2004,2014,2024)
+               &var3_value !='NULL'
+               &as.numeric(var3_value)<80
+               &var2_value == 'Diasporic Birth Citizen'
+               ,.(count=as.numeric(measure1)/1000
+                  , age=var3_value
+                  ,yr=as.numeric(var1_value))
+               ]
+
+read1.2 <- read1.1[read2, on=.(age)]
+
+plot1 <- read1.2[is.na(yr)==FALSE
+                 ,.(total=sum(count*as.numeric(male_mort)))
+                 ,by=.(yr,age=as.numeric(age))]
+
+plot1$yr <-factor(plot1$yr,levels=c(2004,2014,2024))
+
+ggplot(plot1)+
+  geom_line(aes(colour = yr, group=yr, x=age, y=total))+
+  labs(title = "Figure 3: The diaspora is growing older over time"
+       , subtitle = "Thousands of diasporic birth citizens", x="Age", y = "N")+
+  theme_minimal()+
+  scale_colour_manual(name = "Year", values=tsy_palette3)
+
+  
+```
+
+##### Figure 4
+
+```{r Fig4, results='asis', echo=FALSE}
+
+cat('**Figure 4: Number of NZ birth citizens living overseas by ethnic group (and as percentage of all in that ethnic group) **')
+
+read1.1 <- read1[table_nbr==2
+                 &var3_value!='NULL'
+                 &as.numeric(var3_value)<=110
+                 &measure1!='S'
+                 &measure1!='NULL'
+                 &is.na(var4_value)==FALSE
+                 &var4_value %in% c('Asian','Maori','Pacific','NZ European','MELAA','Other')
+                 ,.(yr=as.numeric(var1_value)
+                    ,transcat=var2_value
+                    ,age=var3_value
+                    ,ethnicity=var4_value
+                    ,count=as.numeric(measure1))]
+
+read1.2 <- read2[read1.1, on=.(age)]
+
+read1.3 <- read1.2[,.(yr,transcat,age,ethnicity,count,wght_count=count*as.numeric(male_mort))]
+
+read1.4 <- read1.3[is.na(count)==FALSE
+                   ,.(total=sum(count)
+                      ,wght_total=sum(wght_count)
+                   )
+                   ,by=.(transcat,yr,ethnicity)]
+
+plot1 <- read1.4[,.(transcat
+                    ,yr
+                    ,ethnicity
+                    ,tot=fcase(substr(transcat,1,1)=='D', wght_total
+                                                    , substr(transcat,1,1)=='R',total
+                                                    )
+                    ,N=wght_total+total
+                    )
+]
+read1.1 <- read1[table_nbr==2
+                 &var3_value!='NULL'
+                 &as.numeric(var3_value)<=110
+                 &measure1!='S'
+                 &measure1!='NULL'
+                 &is.na(var4_value)==FALSE
+                 &var4_value %in% c('Asian','Maori','Pacific','NZ European','MELAA','Other')
+                 ,.(yr=as.numeric(var1_value)
+                    ,transcat=var2_value
+                    ,age=var3_value
+                    ,ethnicity=var4_value
+                    ,count=as.numeric(measure1))]
+
+read1.2 <- read2[read1.1, on=.(age)]
+
+read1.3 <- read1.2[,.(yr,transcat,age,eth=substr(ethnicity,1,2),count,wght_count=count*as.numeric(male_mort))]
+
+read1.4 <- read1.3[is.na(count)==FALSE
+                   ,.(total=sum(count)
+                      ,wght_total=sum(wght_count)
+                   )
+                   ,by=.(transcat,yr,eth)]
+
+read1.5 <- read1.4[,.(transcat=substr(transcat,1,1),yr,eth,tot=fcase(substr(transcat,1,1)=='D', wght_total
+                                                    , substr(transcat,1,1)=='R',total
+))
+]
+
+read1.6 <- dcast(read1.5,yr+eth ~ transcat,value.var=c("tot"))
+
+read1.7 <- read1.6[,.(yr
+                      ,eth
+                      ,diaspora = D
+                      ,percent = D/(D+R))]
+
+read1.8 <- dcast(read1.7,yr ~ eth,value.var=c("diaspora","percent"))
+
+table1 <- read1.8[,.("Year" = yr
+                     ,"NZ European" = round(diaspora_NZ,-3)
+                     ,"NZ European %" = round(percent_NZ,2)
+                     , "Maori" = round(diaspora_Ma,-3)
+                     , "Maori %" = round(percent_Ma,2)
+                     , "Pacific" = round(diaspora_Pa,-3)
+                     , "Pacific %" = round(percent_Pa,2)
+                     , "Asian" = round(diaspora_As,-3)
+                     , "Asian %" = round(percent_As,2)
+                     , "MELAA" = round(diaspora_ME,-3)
+                     , "MELAA %" = round(percent_ME,2)
+                     , "Other" = round(diaspora_Ot,-3)
+                     , "Other %" = round(percent_Ot,2)
+                     )]
+
+reactable(table1,columns=list(
+  'Year' = colDef(format=colFormat(separators=FALSE))
+  , "NZ European" = colDef(format=colFormat(separators=TRUE))
+  , "NZ European %" =colDef(format=colFormat(percent=TRUE,digits=0))
+  , "Maori" = colDef(format=colFormat(separators=TRUE))
+  , "Maori %" =colDef(format=colFormat(percent=TRUE,digits=0))
+  , "Pacific" = colDef(format=colFormat(separators=TRUE))
+  , "Pacific %" =colDef(format=colFormat(percent=TRUE,digits=0))
+  , "Asian" = colDef(format=colFormat(separators=TRUE))
+  , "Asian %" =colDef(format=colFormat(percent=TRUE,digits=0))
+  , "MELAA" = colDef(format=colFormat(separators=TRUE))
+  , "MELAA %" =colDef(format=colFormat(percent=TRUE,digits=0))
+  , "Other" = colDef(format=colFormat(separators=TRUE))
+  , "Other %" =colDef(format=colFormat(percent=TRUE,digits=0))
+))
+
+```
+
+##### Figure 5
+
+```{r Fig5, echo=FALSE}
+
+read1.1 <- read1[table_nbr==3
+                 &measure1!='S'
+                 &measure1!='NULL'
+                 &var3_value !='NULL'
+                 ,.(count=as.numeric(measure1)/1000
+                    ,yr=as.numeric(var1_value)
+                    ,transcat=var2_value
+                    ,age=var3_value
+                    ,male=var4_value
+                 )
+]
+
+read1.2 <- read1.1[read2,on=.(age)]
+
+read1.3 <- read1.2[,.(yr
+                      ,transcat
+                      ,age
+                      ,male
+                      ,count
+                      ,wght_count=count*as.numeric(male_mort)
+)]
+
+read1.4 <- read1.3[,.
+                   (yr
+                     ,transcat
+                     ,age
+                     ,male
+                     ,tot=fcase(substr(transcat,1,1)=='D', wght_count
+                                , substr(transcat,1,1)=='R',count)
+                   )
+]
+
+read1.5 <- read1.4[substr(transcat,1,1)=='D'
+                   ,.(subtotal=sum(tot))
+                   ,by=.(yr,male)]
+
+read1.6 <- read1.4[,.(total=sum(tot))
+                   ,by=.(yr,male)]
+
+read1.7 <- read1.6[read1.5,on=.(yr,male)]
+
+plot1 <- read1.7[,.(yr,gender=fcase(male==1, 'Male'
+                                    ,male==0, 'Female'
+                                    )
+                                    ,percent=subtotal/total)]
+
+ggplot(plot1)+
+  geom_line(aes(colour = gender, x=yr, y=percent))+
+  labs(title = "Figure 5: Diasporic membership is slightly higher among women"
+       , subtitle = "Proportion of birth citizens living overseas", x="Year", y = "%")+
+  theme_minimal()+
+  scale_colour_manual(name = "Gender", values=tsy_palette2)+
+  scale_y_continuous(labels=scales::percent)
+
+```
+
+### Diasporic membership over the lifecourse
+
+Figure 6 illustrates the strong lifecourse pattern of diaspora membership. We only have 25 years of data available, so cannot observe the full lifecourse of any given birth cohort. But examining successive birth cohorts suggests there has been a strong and consistent lifecycle pattern for birth cohorts since 1950. Membership in the diaspora appears to rise steadily during childhood and more steeply during young adulthood, before stabilising after the age of 30 or so. By the age of 30, 25-30% of each birth cohort is currently living overseas, with this number appearing to stay steady at least through to age 60 or so.
+
+Figure 6 also illustrates a strong cohort effect for cohorts born prior to about 1950. For these cohorts we lack information about emigration patterns during their 20s and 30s. But it is clear the earliest cohorts have lower rates of diasporic membership in their later years. At the age of 70, less than 15% of those born in 1930 were overseas, rising to 25% of those born in 1950. This pattern may well reflect the long-term effect of increasing emigration rates in the 1960s and 1970s as international air travel became widely available, but this can not be concluded from this data. What the data does show is that rates of diasporic membership tend to fall only modestly towards the latter end of lifecourse.
+
+However, members of the diaspora do have the right to return, and it is clear that some chose to do so during the COVID-19 pandemic. This can be seen in the dip in many cohort’s traces on Figure 6, and is shown more clearly in Figure 7 and Figure 8. Rates of return during the pandemic were highest for those in their mid-late twenties, with up to 3% of each birth cohort returning to New Zealand, but about 1% of older New Zealanders also returned. This an example of a period effect. Another period effect can be seen following the global financial crisis, at which point the proportion of people in the diaspora grew substantially, especially among those in their mid-late twenties (Figure 9). Figure 10 shows that, in contrast, membership in the diaspora grew more slowly at the start of the century.
+
+The overall impression is one of a fairly consistent lifecycle pattern, but with the precise timing and level of diasporic membership influenced by events. More simply, the data suggests many members of each birth cohort want to live overseas for at least some of their life. They are most likely to exercise this choice in their twenties, but are less likely to choose to live overseas during a pandemic and more likely to do so during an economic downturn. Peak rates of diasporic membership for each cohort may also be affected by events somewhat, but the difference is small. For example, diasporic membership peaked at a little over 30% for the 1985 birth cohort after the GFC, but other birth cohorts since 1950 or so have peaked at no less than 25%.
+
+#### Figures 6-10 {.tabset}
+
+##### Figure 6
+
+```{r Fig6, echo=FALSE}
+
+read6.1 <- read1[table_nbr==4&measure1!='S'&((var1_value==1999&var3_value<1999) |var1_value == as.numeric(var3_value))&as.numeric(var3_value)>1929
+                 ,.(cohort=sum(as.numeric(measure1))/1000)
+                 ,by=.(birth_yr=as.numeric(var3_value))]
+
+read6.2 <- read1[table_nbr==4&measure1!='S'&as.numeric(var3_value)>1929 
+                 ,.(total=sum(as.numeric(measure1))/1000)
+                 , by=.(age=as.numeric(var1_value)-as.numeric(var3_value)
+                        ,transcat=var2_value
+                        ,birth_yr=as.numeric(var3_value)
+                 )]
+
+read6.3 <- read6.1[read6.2, on=.(birth_yr)]
+
+plot6 <- read6.3[birth_yr %in% c(1930:2020)&transcat=='Diasporic Birth Citizen',.(birth_yr,age,transcat,percent=total/cohort)]
+
+
+ggplot(plot6)+
+  geom_line(aes(color=birth_yr,x=age, y=percent,group=birth_yr))+
+  labs(title = "Figure 6: Diasporic membership has a strong life-course pattern"
+       , subtitle = "Proportion of New Zealand-born living overseas, birth cohorts 1930-2020", x="Age", y = "%")+
+  theme_minimal()+
+  scale_color_gradient(name = 'Birth Year'
+                       ,limits=c(1930,2020)
+                       ,breaks=c(1930,2020))+
+  scale_y_continuous(labels=scales::percent)
+
+```
+
+##### Figure 7
+
+```{r Fig7, echo=FALSE}
+
+read7.1 <- read1[table_nbr==4&measure1!='S'&((var1_value==1999&var3_value<1999) |var1_value == as.numeric(var3_value))&as.numeric(var3_value)>1929
+                 ,.(cohort=sum(as.numeric(measure1))/1000)
+                 ,by=.(birth_yr=as.numeric(var3_value))]
+read7.2 <- read1[table_nbr==4&measure1!='S'&as.numeric(var3_value)>1910 
+                 ,.(total=sum(as.numeric(measure1))/1000)
+                 , by=.(age=as.numeric(var1_value)-as.numeric(var3_value)
+                        ,transcat=var2_value
+                        ,birth_yr=as.numeric(var3_value)
+                 )]
+
+
+
+read7.3 <- read7.1[read7.2, on=.(birth_yr)]
+
+plot7 <- read7.3[age %in%c(10,20,30,50,70)&transcat=='Diasporic Birth Citizen',.(yr=as.numeric(birth_yr)+as.numeric(age),age,transcat,percent=total/cohort)]
+
+plot7$age <- factor(plot7$age,levels=c(70,50,30,20,10))
+
+ggplot(plot7)+
+  geom_line(aes(colour = age, x=yr, y=percent))+
+  labs(title = "Figure 7: The proportion of people living overseas at age 70 has grown over time,
+but has gone up and down for younger ages"
+       , subtitle = "Proportion of New Zealand-born living overseas at certain ages", x="Year", y = "%")+
+  theme_minimal()+
+  scale_y_continuous(labels=scales::percent)+
+  scale_colour_manual(name = "Age", values=tsy_palette5)
+  
+```
+
+##### Figure 8
+
+```{r Fig8, echo=FALSE}
+
+read8.1 <- read1[table_nbr==4&measure1!='S'&((var1_value==1999&var3_value<1999) |var1_value == as.numeric(var3_value))&as.numeric(var3_value)>1929
+                 ,.(cohort=sum(as.numeric(measure1))/1000)
+                 ,by=.(birth_yr=as.numeric(var3_value))]
+
+read8.2 <- read1[table_nbr==4&measure1!='S'&as.numeric(var3_value)>1929 
+                 ,.(total=sum(as.numeric(measure1))/1000)
+                 , by=.(age=as.numeric(var1_value)-as.numeric(var3_value)
+                        ,transcat=var2_value
+                        ,birth_yr=as.numeric(var3_value)
+                 )]
+
+read8.3 <- read8.1[read8.2, on=.(birth_yr)]
+
+read8.4 <- read8.3[birth_yr %in% c(1930:2015)&transcat=='Diasporic Birth Citizen',.(age_in_2021 = 2021-as.numeric(birth_yr),yr=birth_yr+age,transcat,percent=total/cohort)]
+
+read8.5 <- read8.4[yr==2018,.(age_in_2021,percent2018=percent)]
+
+read8.6 <- read8.4[yr==2021,.(age_in_2021,percent2021=percent)]
+
+read8.7 <- read8.5[read8.6,on=.(age_in_2021)]
+
+plot8 <- read8.7[,.(age_in_2021,change=percent2021-percent2018)]
+
+ggplot(plot8, aes(x=age_in_2021, y=change)) +
+  geom_bar(fill= '#0083ac',position= "dodge", stat="identity")+
+  labs(title = "Figure 8: Many younger adults returned to NZ
+during the pandemic"
+       , subtitle = "Within-birth cohort change in proportion of NZ-born living overseas, 2018-2021"
+       , x="Age in 2021", y = "ppt change")+
+  theme_minimal()+
+  scale_y_continuous(labels=scales::percent,limits=c(-0.1,0.1))
+```
+
+##### Figure 9
+
+```{r Fig9, echo=FALSE}
+
+read9.1 <- read1[table_nbr==4&measure1!='S'&((var1_value==1999&var3_value<1999) |var1_value == as.numeric(var3_value))&as.numeric(var3_value)>1929
+                 ,.(cohort=sum(as.numeric(measure1))/1000)
+                 ,by=.(birth_yr=as.numeric(var3_value))]
+
+read9.2 <- read1[table_nbr==4&measure1!='S'&as.numeric(var3_value)>1929 
+                 ,.(total=sum(as.numeric(measure1))/1000)
+                 , by=.(age=as.numeric(var1_value)-as.numeric(var3_value)
+                        ,transcat=var2_value
+                        ,birth_yr=as.numeric(var3_value)
+                 )]
+
+read9.3 <- read9.1[read9.2, on=.(birth_yr)]
+
+read9.4 <- read9.3[birth_yr %in% c(1930:2012)&transcat=='Diasporic Birth Citizen',.(age_in_2012 = 2012-as.numeric(birth_yr),yr=birth_yr+age,transcat,percent=total/cohort)]
+
+read9.5 <- read9.4[yr==2009,.(age_in_2012,percent2009=percent)]
+
+read9.6 <- read9.4[yr==2012,.(age_in_2012,percent2012=percent)]
+
+read9.7 <- read9.5[read9.6,on=.(age_in_2012)]
+
+plot9 <- read9.7[,.(age_in_2012,change=percent2012-percent2009)]
+
+ggplot(plot9, aes(x=age_in_2012, y=change)) +
+  geom_bar(fill= '#0083ac',position= "dodge", stat="identity")+
+  labs(title = "Figure 9: Many people joined the diaspora after the GFC"
+       , subtitle = "Within-birth cohort change in proportion of NZ-born living overseas, 2009-2012"
+       , x="Age in 2012", y = "ppt change")+
+  theme_minimal()+
+  scale_y_continuous(labels=scales::percent,limits=c(-0.1,0.1))
+
+```
+
+##### Figure 10
+
+```{r Fig10, echo=FALSE}
+
+read10.1 <- read1[table_nbr==4&measure1!='S'&((var1_value==1999&var3_value<1999) |var1_value == as.numeric(var3_value))&as.numeric(var3_value)>1929
+                 ,.(cohort=sum(as.numeric(measure1))/1000)
+                 ,by=.(birth_yr=as.numeric(var3_value))]
+
+read10.2 <- read1[table_nbr==4&measure1!='S'&as.numeric(var3_value)>1929 
+                 ,.(total=sum(as.numeric(measure1))/1000)
+                 , by=.(age=as.numeric(var1_value)-as.numeric(var3_value)
+                        ,transcat=var2_value
+                        ,birth_yr=as.numeric(var3_value)
+                 )]
+
+read10.3 <- read10.1[read10.2, on=.(birth_yr)]
+
+read10.4 <- read10.3[birth_yr %in% c(1930:2000)&transcat=='Diasporic Birth Citizen',.(age_in_2003 = 2003-as.numeric(birth_yr),yr=birth_yr+age,transcat,percent=total/cohort)]
+
+read10.5 <- read10.4[yr==2003,.(age_in_2003,percent2003=percent)]
+
+read10.6 <- read10.4[yr==2000,.(age_in_2003,percent2000=percent)]
+
+read10.7 <- read10.5[read10.6,on=.(age_in_2003)]
+
+plot10 <- read10.7[,.(age_in_2003,change=percent2003-percent2000)]
+
+ggplot(plot10, aes(x=age_in_2003, y=change)) +
+  geom_bar(fill= '#0083ac',position= "dodge", stat="identity")+
+  labs(title = "Figure 10: Diasporic membership grew less slowly after Y2K than 
+after the GFC"
+       , subtitle = "Within-birth cohort change in proportion of NZ-born living overseas, 2000-2003"
+       , x="Age in 2003", y = "ppt change")+
+  theme_minimal()+
+  scale_y_continuous(labels=scales::percent,limits=c(-0.1,0.1))
+  
+```
+
+ 
+## Flows into the diaspora (emigration)
+
+Emigration is a flow from the stock of resident citizens into the stock of diasporic citizens. This can be approximated using the transnational dataset, but for greater accuracy and comparability we used the official definition in the following figures (11-24). The official definition of an emigration is where someone was living in New Zealand prior to a departure, and spends at least 12 of the 16 following months outside of New Zealand.
+
+We use the residence definition from the transnational dataset to provide a denominator to calculate emigration rates for each subgroup. Emigration in 2024 is determined probabilistically using a machine learning algorithm developed by Stats NZ. It will thus contain some error in identifying exactly which departures are classified as emigrations.
+
+As Figure 11 shows, emigration of the NZ-born is only about a third of emigration. About half of emigration is of non-NZ citizens, and the remainder is of foreign-born NZ citizens.
+
+Figures 12 and 13 illustrate the strong age-related pattern of emigration for the NZ-born. Emigration rates are highest among those in their 20s and 30s. Emigration of people in their 20s varies the most over time – climbing to above 4% after the GFC, then falling to below 1% during the pandemic, before climbing back to about 4% in 2024.
+
+However, because most people are not in their 20s and 30s, only about half of emigration in each year is accounted for by this group. The rest is split between children and older adults (mostly in their 40s and 50s). There is a close relationship between the emigration patterns of these younger and older New Zealanders, who will most commonly be emigrating as family units. Figure 13 also shows that the number of children emigrating is higher than the number of middle-aged people emigrating. Additional analysis in the IDI (not shown) found that this is partly explained by the fact that NZ-born children are more likely to emigrate if their parents are foreign-born than if their parents are also NZ-born. 
+
+
+#### Figures 11-13 {.tabset}
+
+
+##### Figure 11
+
+```{r Fig11, echo=FALSE}
+
+read1.1 <- read1[table_nbr==5&measure1!='S'&var4_value=='people'&var1_value<2025
+                  ,.("NZ Citizen Emigration (IDI)"=sum(as.numeric(measure1))/1000)
+                  ,by=.(yr=as.numeric(var1_value))]
+
+read1.2 <- read1[table_nbr==5&measure1!='S'&var4_value=='people'&var2_value==1
+                  ,.("NZ Citizen Emigration (NZ Born)"=sum(as.numeric(measure1))/1000)
+                  ,by=.(yr=as.numeric(var1_value))]
+
+
+read1.3 <- data.table(yr=c(2001:2024)
+                       , "NZ Citizen Emigration (Infoshare)" = 
+                         c(57.042
+                           ,46.003
+                           ,45.115
+                           ,50.996
+                           ,54.652
+                           ,57.343
+                           ,65.288
+                           ,68.131
+                           ,48.791
+                           ,56.978
+                           ,71.187
+                           ,70.697
+                           ,55.682
+                           ,45.060
+                           ,43.336
+                           ,41.327
+                           ,41.518
+                           ,42.402
+                           ,38.095
+                           ,15.334
+                           ,26.378
+                           ,52.059
+                           ,65.798
+                           ,69.724
+                         )
+                       , "Total Emigration (Infoshare)" = 
+                         c(84.332
+                           ,73.255
+                           ,79.175
+                           ,89.356
+                           ,92.716
+                           ,93.974
+                           ,102.413
+                           ,107.723
+                           ,89.996
+                           ,100.776
+                           ,116.350
+                           ,112.170
+                           ,92.991
+                           ,80.767
+                           ,80.316
+                           ,80.235
+                           ,86.822
+                           ,89.447
+                           ,93.154
+                           ,54.600
+                           ,70.409
+                           ,94.540
+                           ,101.940
+                           ,121.541
+                         ))
+
+
+read1.4 <- read1.1[read1.2, on=.(yr)]
+
+read1.5 <- read1.4[read1.3, on=.(yr)]
+
+
+plot1 <- melt(read1.5,id.vars= c("yr"),measure.vars=c("Total Emigration (Infoshare)"
+                                                        ,"NZ Citizen Emigration (Infoshare)"
+                                                        ,"NZ Citizen Emigration (IDI)"
+                                                        , "NZ Citizen Emigration (NZ Born)"
+)
+)
+
+plot1$variable <- factor(plot1$variable, levels=c("Total Emigration (Infoshare)"
+                                                    ,"NZ Citizen Emigration (Infoshare)"
+                                                    ,"NZ Citizen Emigration (IDI)"
+                                                    , "NZ Citizen Emigration (NZ Born)"
+)
+)
+
+
+ggplot(plot1)+
+  geom_line(aes(colour = variable, x=yr, y=value))+
+  labs(title = "Figure 11: We use the Stats NZ definition of emigration for greater precision,
+although the transnational dataset provides a similar figure"
+       , subtitle = "Thousands of NZ citizens emigrating", x="Year", y = "N")+
+  theme_minimal()+
+  scale_colour_manual(name = "Emigration definition", values=tsy_palette4)
+  
+```
+
+##### Figure 12
+
+```{r Fig12, echo=FALSE}
+
+read12.1 <- read1[table_nbr==51&measure1!='S'&var3_value=='emigrant'&var1_value>1999
+                  ,.("Emigration"=sum(as.numeric(measure1))/1000)
+                  ,by=.(age=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read12.2 <- read1[table_nbr==51&measure1!='S'&var3_value=='resident'&var1_value>1999
+                  ,.("Resident"=sum(as.numeric(measure1))/1000)
+                  ,by=.(age=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read12.3 <- read12.1[read12.2,on=.(yr,age)]
+
+plot12 <- read12.3[Emigration!='NA'
+                   ,.(percent=Emigration/Resident)
+                   ,by=.(age=fcase(age==0,'0-9'
+                                   ,age==10,'10-19'
+                                   ,age==20,'20-29'
+                                   ,age==30,'30-39'
+                                   ,age==40,'40-49'
+                                   ,age==50,'50-59'
+                                   ,age==60,'60-69'
+                                   ,age==70,'70-79'
+                                   ,age==80,'80-89'
+                                   ,age==90,'90+')
+                         ,yr
+                         ,life_stage=fcase(age<11,'Childhood'
+                                           ,age<31,'Young Adulthood'
+                                           ,age<61, 'Middle Age'
+                                           ,default= 'Old Age'))]
+
+plot12$life_stage <- factor(plot12$life_stage, levels = c('Childhood'
+                                                          ,'Young Adulthood'
+                                                          ,'Middle Age'
+                                                          ,'Old Age'))
+
+ggplot(plot12)+
+  geom_line(aes(colour = age, x=yr, y=percent))+
+  labs(title = "Figure 12: Emigration rates are highest among young adults"
+       , subtitle = "Proportion of NZ birth citizens emigrating", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(life_stage))+
+  scale_colour_manual(name = "Age", values=tsy_palette10)+
+  theme(axis.text.x = element_text(angle=-90, hjust=1, vjust=0.5))+
+  scale_y_continuous(labels=scales::percent,limits=c(0,0.06))
+
+
+```
+
+##### Figure 13
+
+```{r Fig13, echo=FALSE}
+
+read13.1 <- read1[table_nbr==51&measure1!='S'&var3_value=='emigrant'&var1_value>1999
+                  ,.(emigration=sum(as.numeric(measure1))/1000)
+                  ,by=.(yr=as.numeric(var1_value)
+                        ,life_stage=fcase(var2_value<11,'Childhood'
+                                         ,var2_value<31,'Young Adulthood'
+                                         ,var2_value<61, 'Middle Age'
+                                         ,default= 'Old Age'))]
+
+read13.2 <- read1[table_nbr==51&measure1!='S'&var3_value=='emigrant'&var1_value>1999
+                  ,.(total_emigration=sum(as.numeric(measure1))/1000)
+                  ,by=.(yr=as.numeric(var1_value)
+                      )]
+
+read13.3 <- read13.1[read13.2,on=.(yr)]
+
+plot13 <- read13.3[,.(yr,life_stage,percent=emigration/total_emigration)
+                     ]
+
+plot13$life_stage <- factor(plot13$life_stage, levels = c('Old Age'
+                                                          ,'Childhood'
+                                                          ,'Middle Age'
+                                                          ,'Young Adulthood'
+                                                          ))
+
+ggplot(plot13, aes(fill=life_stage, x=yr, y=percent))+
+  geom_bar(position= "stack", stat="identity")+
+  labs(title = "Figure 13: But young adults comprise only about half of NZ-born emigrants"
+       , subtitle = "Proportion of all NZ-born emigrants"
+       , x="Year", y = "%")+
+  theme_minimal()+
+  scale_y_continuous(labels=scales::percent)+
+  scale_fill_manual(name = "Life Stage", values=tsy_palette4)
+
+```
+
+
+### Emigration rates of young adults
+
+Young adults have the highest rates of emigration, but there is substantial variation in emigration propensity across different subgroups of young people. Ethnicity and qualification are two key correlates.^[Qualification information is incomplete in the IDI prior to 2013, so figures 14-19 are restricted to the period 2013-2024.] Figure 14 illustrates that emigration is most common among young people with Bachelor's level qualifications or higher, as reported in earlier work by the Ministry of Education (2017). 
+
+Figure 15 illustrates that emigration is highest among young NZ-born Asians, and lowest among Maori. However, because ethnicity and qualification are themselves highly correlated, figures 16-19 decompose the emigration rates by the various combinations of gender, ethnicity and qualification. These figures show that the qualification gradient is smallest for Pacific peoples, and greatest for NZ Europeans. 
+
+
+#### Figures 14-19 {.tabset}
+
+##### Figure 14
+
+```{r Fig14, echo=FALSE}
+
+
+read14.1 <- read1[table_nbr==6&measure1!='S'&var1_value>=2013&var2_value %in% c(20,25,30,35)&var4_value=='resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,age=as.numeric(var2_value)
+                        ,yr=as.numeric(var1_value))]
+
+read14.2 <- read1[table_nbr==6&measure1!='S'&var1_value>=2013&var2_value %in% c(20,25,30,35) &var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,age=as.numeric(var2_value)
+                        ,yr=as.numeric(var1_value))]
+
+read14.3 <- read14.2[read14.1,on=.(yr,qual,age)
+]
+
+plot14 <- read14.3[qual!='Unknown',.(age=fcase(age==20,'20-24'
+                                               ,age==25,'25-29'
+                                               ,age==30,'30-34'
+                                               ,age==35,'35-39')
+                                     , year=as.numeric(yr)
+                                     ,qual
+                                     ,percent=subtotal/total)]
+
+plot14$qual <- factor(plot14$qual,levels=c('7+ Tertiary'
+                                           ,'4-6 Tertiary'
+                                           ,'School'
+                                           ,'None'))
+
+ggplot(plot14)+
+  geom_line(aes(colour = qual, x=year, y=percent))+
+  labs(title = "Figure 14: There has been a large upswing in emigration post-covid,
+particularly among highly educated twenty-somethings"
+       , subtitle = "Proportion of resident NZ-born emigrating by age", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(age),ncol=2)+
+  scale_colour_manual(name = "Highest qualification", values=tsy_palette4)+
+  scale_y_continuous(limits=c(0,0.1),labels=scales::percent)+
+  scale_x_continuous(breaks=c(2013,2015,2017,2019,2021,2023))
+
+```
+
+##### Figure 15
+
+```{r Fig15, echo=FALSE}
+
+
+read15.1 <- read1[table_nbr==7&measure1!='S'&var4_value=='resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read15.2 <- read1[table_nbr==7&measure1!='S'&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read15.3 <- read15.2[read15.1,on=.(yr,gender)]
+
+read15.Euro <- read15.3[,.(ethnicity='Euro'
+                          ,gender
+                          , yr
+                          ,percent=subtotal/total)]
+
+
+read15.3 <- read1[table_nbr==8&measure1!='S'&var4_value=='resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read15.4 <- read1[table_nbr==8&measure1!='S'&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read15.5 <- read15.3[read15.4,on=.(yr,gender)]
+
+read15.Asian <- read15.5[,.(ethnicity='Asian'
+                           ,gender
+                           , yr
+                           ,percent=subtotal/total)]
+
+read15.6 <- read1[table_nbr==9&measure1!='S'&var4_value=='resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read15.7 <- read1[table_nbr==9&measure1!='S'&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read15.8 <- read15.6[read15.7,on=.(yr,gender)]
+
+read15.Maori <- read15.8[,.(ethnicity='Maori'
+                            ,gender
+                            , yr
+                            ,percent=subtotal/total)]
+
+
+read15.9 <- read1[table_nbr==10&measure1!='S'&var4_value=='resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read15.10 <- read1[table_nbr==10&measure1!='S'&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read15.11 <- read15.9[read15.10,on=.(yr,gender)]
+
+read15.Pacific <- read15.11[,.(ethnicity='Pacific'
+                            ,gender
+                            , yr
+                            ,percent=subtotal/total)]
+
+read15.12 <- rbind(read15.Euro,read15.Asian,read15.Pacific,read15.Maori)
+
+plot15 <- read15.12[yr>2012]
+
+plot15$ethnicity <- factor(plot15$ethnicity, levels=c('Asian','Pacific','Euro','Maori'))
+
+ggplot(plot15)+
+  geom_line(aes(colour = ethnicity, x=yr, y=percent))+
+  labs(title = "Figure 15: Emigration rates are lowest among Maori"
+       , subtitle = "Proportion of resident NZ-born aged 20-29 emigrating", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(gender),ncol=2)+
+  scale_colour_manual(name = "Ethnicity", values=tsy_palette4)+
+  scale_y_continuous(limits=c(0,0.1),labels=scales::percent)+
+  scale_x_continuous(breaks=c(2012,2014,2016,2018,2020,2022))
+
+```
+
+
+##### Figure 16
+
+```{r Fig16, echo=FALSE}
+
+read16.1 <- read1[table_nbr==8&measure1!='S'&var1_value>=2013&var4_value=='resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read16.2 <- read1[table_nbr==8&measure1!='S'&var1_value>=2013&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read16.3 <- read16.2[read16.1,on=.(yr,qual,gender)
+]
+
+plot16 <- read16.3[qual!='Unknown',.(gender
+                                     , yr
+                                     ,qual
+                                     ,percent=subtotal/total)]
+
+plot16$qual <- factor(plot16$qual,levels=c('7+ Tertiary'
+                                           ,'4-6 Tertiary'
+                                           ,'School'
+                                           ,'None'))
+
+ggplot(plot16)+
+  geom_line(aes(colour = qual, x=yr, y=percent))+
+  labs(title = "Figure 16: Among NZ-born people of Asian ethnicity, 
+emigration rates are highest for those with level 7+ qualifications"
+       , subtitle = "Proportion of resident NZ-born Asians aged 20-29 emigrating", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(gender),ncol=2)+
+  scale_colour_manual(name = "Highest qualification", values=tsy_palette4)+
+  scale_y_continuous(limits=c(0,0.1),labels=scales::percent)+
+  scale_x_continuous(breaks=c(2013,2015,2017,2019,2021,2023))
+```
+
+##### Figure 17
+
+```{r Fig17, echo=FALSE}
+
+read17.1 <- read1[table_nbr==9&measure1!='S'&var1_value>=2013&var4_value=='resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read17.2 <- read1[table_nbr==9&measure1!='S'&var1_value>=2013&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read17.3 <- read17.2[read17.1,on=.(yr,qual,gender)
+]
+
+plot17 <- read17.3[qual!='Unknown',.(gender
+                                     , yr
+                                     ,qual
+                                     ,percent=subtotal/total)]
+
+plot17$qual <- factor(plot17$qual,levels=c('7+ Tertiary'
+                                           ,'4-6 Tertiary'
+                                           ,'School'
+                                           ,'None'))
+
+ggplot(plot17)+
+  geom_line(aes(colour = qual, x=yr, y=percent))+
+  labs(title = "Figure 17: And also among NZ-born people of Maori ethnicity"
+       , subtitle = "Proportion of resident NZ-born Maori aged 20-29 emigrating", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(gender),ncol=2)+
+  scale_colour_manual(name = "Highest qualification", values=tsy_palette4)+
+  scale_y_continuous(limits=c(0,0.1),labels=scales::percent)+
+  scale_x_continuous(breaks=c(2013,2015,2017,2019,2021,2023))
+
+```
+
+
+##### Figure 18
+
+```{r Fig18, echo=FALSE}
+
+read18.1 <- read1[table_nbr==7&measure1!='S'&var1_value>=2013&var4_value=='resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read18.2 <- read1[table_nbr==7&measure1!='S'&var1_value>=2013&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read18.3 <- read18.2[read18.1,on=.(yr,qual,gender)
+]
+
+plot18 <- read18.3[qual!='Unknown',.(gender
+                                     , yr
+                                     ,qual
+                                     ,percent=subtotal/total)]
+
+plot18$qual <- factor(plot18$qual,levels=c('7+ Tertiary'
+                                           ,'4-6 Tertiary'
+                                           ,'School'
+                                           ,'None'))
+
+ggplot(plot18)+
+  geom_line(aes(colour = qual, x=yr, y=percent))+
+  labs(title = "Figure 18: And even higher among level 7+ NZ-born
+people of European ethnicity"
+       , subtitle = "Proportion of resident NZ-born Europeans aged 20-29 emigrating", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(gender),ncol=2)+
+  scale_colour_manual(name = "Highest qualification", values=tsy_palette4)+
+  scale_y_continuous(limits=c(0,0.1),labels=scales::percent)+
+  scale_x_continuous(breaks=c(2013,2015,2017,2019,2021,2023))
+
+```
+
+##### Figure 19
+
+```{r Fig19, echo=FALSE}
+
+read19.1 <- read1[table_nbr==10&measure1!='S'&var1_value>=2013&var4_value=='resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read19.2 <- read1[table_nbr==10&measure1!='S'&var1_value>=2013&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,gender=var2_value
+                        ,yr=as.numeric(var1_value))]
+
+read19.3 <- read19.2[read19.1,on=.(yr,qual,gender)
+]
+
+plot19 <- read19.3[qual!='Unknown',.(gender
+                                     , yr
+                                     ,qual
+                                     ,percent=subtotal/total)]
+
+plot19$qual <- factor(plot19$qual,levels=c('7+ Tertiary'
+                                           ,'4-6 Tertiary'
+                                           ,'School'
+                                           ,'None'))
+
+ggplot(plot19)+
+  geom_line(aes(colour = qual, x=yr, y=percent))+
+  labs(title = "Figure 19: With less differentation by qualification level
+for NZ-born people of Pacific ethnicity"
+       , subtitle = "Proportion of resident NZ-born Pacific people aged 20-29 emigrating", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(gender),ncol=2)+
+  scale_colour_manual(name = "Highest qualification", values=tsy_palette4)+
+  scale_y_continuous(limits=c(0,0.1),labels=scales::percent)+
+  scale_x_continuous(breaks=c(2013,2015,2017,2019,2021,2023))
+
+```
+
+
+### Emigration rates of children (and their parents)
+
+Emigration patterns for children and their parents are somewhat different to those for young adults. Figure 20 illustrates that emigration rates are generally higher among Pacific children, and for NZ-born Asian children under the age of 10. Emigration rates of Māori children are a little higher than those for NZ European children, in a reversal of the pattern for young adults.
+
+Given that all NZ-born children are on the DIA birth register, we can retrieve information about their parents to understand other differences in emigration rates. There is no reliable way to identify contemporary family and household information in the IDI for the whole population over time, so we do not know which children are still living with their parents. But for the purposes of this analysis we assume that most are, especially at younger ages. Figures 21 and 22 identify the emigration rates of children with mothers and fathers in each of the four quartiles of taxable income, with the quartiles defined across the full population. The relationship between income and emigration rates appears rather weak.
+
+Figures 23 and 24 show there is a clearer relationship with parental qualification, especially father’s qualification. Like with young adults, emigration is most common among those with the highest qualifications. However, this relationship is weaker than for young adults, and diminishes over time. After the age of 10, there is a less pronounced relationship between parental education and emigration rates.
+
+
+
+#### Figures 20-24 {.tabset}
+
+##### Figure 20
+
+```{r Fig20, echo=FALSE}
+
+read20.1 <- read1[table_nbr==101&measure1!='S'&var1_value>=2002&var3_value != 'resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(ethnicity=var2_value
+                        ,age=fcase(var3_value==0,'0-4'
+                                   ,var3_value==5,'5-9'
+                                   ,var3_value==10,'10-14'
+                                   ,var3_value==15,'15-19'
+                                  )
+                        ,yr=as.numeric(var1_value))]
+
+read20.2 <- read1[table_nbr==101&measure1!='S'&var1_value>=2002&var3_value != 'NULL'&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(ethnicity=var2_value
+                        ,age=fcase(var3_value==0,'0-4'
+                                   ,var3_value==5,'5-9'
+                                   ,var3_value==10,'10-14'
+                                   ,var3_value==15,'15-19'
+                                  )
+                        ,yr=as.numeric(var1_value))]
+
+read20.3 <- read20.2[read20.1,on=.(yr,ethnicity,age)
+]
+
+plot20 <- read20.3[, .(year=as.numeric(yr)
+                       ,ethnicity
+                       , age
+                       ,percent=subtotal/total)]
+
+plot20$ethnicity <- factor(plot20$ethnicity, levels = c('Asian','Pacific','Maori','Euro'))
+
+plot20$age <- factor(plot20$age, levels = c('0-4','5-9','10-14','15-19'))
+
+ggplot(plot20)+
+  geom_line(aes(colour = ethnicity, x=year, y=percent))+
+  labs(title = "Figure 20: Childhood emigration is least common among NZ European children"
+       , subtitle = "Proportion of resident NZ-born emigrating by age", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(age),ncol=2)+
+  scale_colour_manual(name = "Ethnicity", values=tsy_palette4)+
+  scale_y_continuous(limits=c(0,0.05),labels=scales::percent)
+
+```
+
+
+##### Figure 21
+
+```{r Fig21, echo=FALSE}
+
+read21.1 <- read1[table_nbr==11&measure1!='S'&var1_value>=2002&var3_value != 'resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(quartile=as.numeric(var3_value)
+                        ,age=fcase(var2_value==0,'0-4'
+                                   ,var2_value==5,'5-9'
+                                   ,var2_value==10,'10-14'
+                                   ,var2_value==15,'15-19'
+                                  )
+                        ,yr=as.numeric(var1_value))]
+
+read21.2 <- read1[table_nbr==11&measure1!='S'&var1_value>=2002&var3_value != 'NULL'&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(quartile=as.numeric(var3_value)
+                        ,age=fcase(var2_value==0,'0-4'
+                                   ,var2_value==5,'5-9'
+                                   ,var2_value==10,'10-14'
+                                   ,var2_value==15,'15-19'
+                                  )
+                        ,yr=as.numeric(var1_value))]
+
+read21.3 <- read21.2[read21.1,on=.(yr,quartile,age)
+]
+
+plot21 <- read21.3[!is.na(quartile), .(year=as.numeric(yr)
+                      ,quartile
+                      , age
+                      ,percent=subtotal/total)]
+
+plot21$quartile <- factor(plot21$quartile, levels = c(1:4))
+
+plot21$age <- factor(plot21$age, levels = c('0-4','5-9','10-14','15-19'))
+
+ggplot(plot21)+
+  geom_line(aes(colour = quartile, x=year, y=percent))+
+  labs(title = "Figure 21: Emigration of children is only weakly related to maternal income"
+       , subtitle = "Proportion of resident NZ-born emigrating by age", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(age),ncol=2)+
+  scale_colour_manual(name = "Mother's income quartile
+two years prior to emigration
+(1=lowest)", values=tsy_palette4)+
+  scale_y_continuous(limits=c(0,0.05),labels=scales::percent)
+
+```
+
+
+##### Figure 22
+
+```{r Fig22, echo=FALSE}
+
+read22.1 <- read1[table_nbr==12&measure1!='S'&var1_value>=2002&var3_value != 'resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(quartile=as.numeric(var3_value)
+                        ,age=fcase(var2_value==0,'0-4'
+                                   ,var2_value==5,'5-9'
+                                   ,var2_value==10,'10-14'
+                                   ,var2_value==15,'15-19'
+                                  )
+                        ,yr=as.numeric(var1_value))]
+
+read22.2 <- read1[table_nbr==12&measure1!='S'&var1_value>=2002&var3_value != 'NULL'&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(quartile=as.numeric(var3_value)
+                        ,age=fcase(var2_value==0,'0-4'
+                                   ,var2_value==5,'5-9'
+                                   ,var2_value==10,'10-14'
+                                   ,var2_value==15,'15-19'
+                                  )
+                        ,yr=as.numeric(var1_value))]
+
+read22.3 <- read22.2[read22.1,on=.(yr,quartile,age)
+]
+
+plot22 <- read22.3[!is.na(quartile), .(year=as.numeric(yr)
+                      ,quartile
+                      , age
+                      ,percent=subtotal/total)]
+
+plot22$quartile <- factor(plot22$quartile, levels = c(1:4))
+
+plot22$age <- factor(plot22$age, levels = c('0-4','5-9','10-14','15-19'))
+
+ggplot(plot22)+
+  geom_line(aes(colour = quartile, x=year, y=percent))+
+  labs(title = "Figure 22: And also only weakly related to paternal income"
+       , subtitle = "Proportion of resident NZ-born emigrating by age", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(age),ncol=2)+
+  scale_colour_manual(name = "Father's income quartile
+two years prior to emigration
+(1=lowest)", values=tsy_palette4)+
+  scale_y_continuous(limits=c(0,0.05),labels=scales::percent)
+
+```
+
+
+##### Figure 23
+
+```{r Fig23, echo=FALSE}
+
+read23.1 <- read1[table_nbr==13&measure1!='S'&var1_value>=2013&var4_value=='resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,age=fcase(var2_value==0,'0-4'
+                                  ,var2_value==5,'5-9'
+                                  ,var2_value==10,'10-14'
+                                  ,var2_value==15,'15-19'
+                                  )
+                        ,yr=as.numeric(var1_value))]
+
+read23.2 <- read1[table_nbr==13&measure1!='S'&var1_value>=2013&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,age=fcase(var2_value==0,'0-4'
+                                     ,var2_value==5,'5-9'
+                                     ,var2_value==10,'10-14'
+                                     ,var2_value==15,'15-19'
+                                  )
+                        ,yr=as.numeric(var1_value))]
+
+read23.3 <- read23.2[read23.1,on=.(yr,qual,age)
+]
+
+plot23 <- read23.3[qual!='Unknown',.(age
+                                     , yr
+                                     ,qual
+                                     ,percent=subtotal/total)]
+
+plot23$qual <- factor(plot23$qual,levels=c('7+ Tertiary'
+                                           ,'4-6 Tertiary'
+                                           ,'School'
+                                           ,'None'))
+
+plot23$age <- factor(plot23$age, levels = c('0-4','5-9','10-14','15-19'))
+
+ggplot(plot23)+
+  geom_line(aes(colour = qual, x=yr, y=percent))+
+  labs(title = "Figure 23: Childhood emigration is associated
+with maternal qualification at younger ages"
+       , subtitle = "Proportion of NZ-born emigrating by age", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(age),ncol=2)+
+  scale_colour_manual(name = "Mother's highest qualification", values=tsy_palette4)+
+  scale_y_continuous(limits=c(0,0.05),labels=scales::percent)+
+  scale_x_continuous(breaks=c(2013,2015,2017,2019,2021,2023))
+
+```
+
+
+##### Figure 24
+
+```{r Fig24, echo=FALSE}
+
+read24.1 <- read1[table_nbr==14&measure1!='S'&var1_value>=2013&var4_value=='resident'
+                  ,.(total=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,age=fcase(var2_value==0,'0-4'
+                                  ,var2_value==5,'5-9'
+                                  ,var2_value==10,'10-14'
+                                  ,var2_value==15,'15-19'
+                                  )
+                        ,yr=as.numeric(var1_value))]
+
+read24.2 <- read1[table_nbr==14&measure1!='S'&var1_value>=2013&var4_value=='emigrant'
+                  ,.(subtotal=sum(as.numeric(measure1))/1000)
+                  ,by=.(qual=fcase(var3_value == 'NULL', 'Unknown'
+                                   ,var3_value == 0, 'None'
+                                   ,var3_value %in% c(1,2,3), 'School'
+                                   ,var3_value %in% c(4,5,6), '4-6 Tertiary'
+                                   ,var3_value %in% c(7,8,9,10), '7+ Tertiary')
+                        ,age=fcase(var2_value==0,'0-4'
+                                     ,var2_value==5,'5-9'
+                                     ,var2_value==10,'10-14'
+                                     ,var2_value==15,'15-19'
+                                  )
+                        ,yr=as.numeric(var1_value))]
+
+read24.3 <- read24.2[read24.1,on=.(yr,qual,age)
+]
+
+plot24 <- read24.3[qual!='Unknown',.(age
+                                     , yr
+                                     ,qual
+                                     ,percent=subtotal/total)]
+
+plot24$age <- factor(plot24$age, levels = c('0-4','5-9','10-14','15-19'))
+
+plot24$qual <- factor(plot24$qual,levels=c('7+ Tertiary'
+                                           ,'4-6 Tertiary'
+                                           ,'School'
+                                           ,'None'))
+
+ggplot(plot24)+
+  geom_line(aes(colour = qual, x=yr, y=percent))+
+  labs(title = "Figure 24: And more strongly associated
+with paternal qualification at earlier ages"
+       , subtitle = "Proportion of NZ-born emigrating by age", x="Year", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(age),ncol=2)+
+  scale_colour_manual(name = "Father's highest qualification", values=tsy_palette4)+
+  scale_y_continuous(limits=c(0,0.05),labels=scales::percent)+
+  scale_x_continuous(breaks=c(2013,2015,2017,2019,2021,2023))
+
+```
+
+
+## Flows out of the diaspora (return migration)
+
+Many New Zealanders who leave do not stay overseas permanently. The right hand panel of figure 25 shows that 50-60% of NZ-born emigrants spend at least one more calendar year resident in New Zealand (according to the 9/12 month rule). Return is most common in the first few years after emigration. 
+The left-hand panel of figure 25 shows the proportion of emigrants who are currently resident in New Zealand again x years after emigration (according the 9/12 months definition of residence). Compared to the right-hand panel, it shows that some people who return emigrate again. Ten years after emigration about 40% of NZ-born emigrants are currently resident in NZ. 
+
+Figure 26 shows there is some variation in return rates over time, but overall the shape is fairly consistent year-on-year. The year-on-year differences likely reflect compositional change, given the patterns shown in figures 27-29. Return rates are highest among those emigrating in their twenties, among people with NZ European and Asian ethnicities, and among the most highly qualified. Many people with these characteristics appear to be participating in the OE tradition. In contrast, emigration among Pacific people and children is much more likely to be permanent (see Figure 29 - note also that the apparent fall in return rates for older emigrants is due to them being deceased).
+
+This dataset does not allow us to explore variation in return rates by destination, but earlier research suggests that emigration to Australia is more likely to be permanent, with about four New Zealanders returning from Australia for every ten moving there (Haig, 2010). Emigration to other countries is more likely to be temporary. Carey (2019) reported that nine New Zealanders return from non-Australian countries for every ten departing for them. Given that emigration to non-Australian countries tends to be more skewed towards people with the highest qualifications, this may suggest that emigration of the most highly qualified is more likely to be temporary as well.
+
+#### Figures 25-29 {.tabset}
+
+##### Figure 25
+
+```{r Fig25, echo=FALSE}
+
+read25.1 <- read1[table_nbr==160&measure1!='S'&measure2!='S'&var3_value=='Resident Birth Citizen'
+                  ,.(measure = 'Current NZ Resident'
+                     ,percent=as.numeric(measure1)/as.numeric(measure2))
+                  ,by=.(yr=as.numeric(var1_value)
+                        ,yrs_since_emigration=as.numeric(var2_value))]
+
+read25.2 <- read1[table_nbr==16&measure1!='S'&measure2!='S'
+                  ,.(measure = 'Ever NZ Resident since emigration'
+                     ,percent=as.numeric(measure1)/as.numeric(measure2))
+                  ,by=.(yr=as.numeric(var1_value)
+                        ,yrs_since_emigration=as.numeric(var2_value))]
+
+plot25 <- rbind(read25.1,read25.2)
+
+ggplot(plot25)+
+  geom_line(aes(colour = yr, x=yrs_since_emigration, y=percent,group=yr))+
+  labs(title = "Figure 25: Up to half of NZ-born emigrants eventually return"
+       , subtitle = "Proportion of NZ-born emigrants resident again in NZ", x="Years since emigration", y = "%")+
+  theme_minimal()+
+  scale_y_continuous(limits=c(0,0.6),labels=scales::percent)+
+  facet_wrap(vars(measure))+
+  theme(panel.spacing.x = unit(1,"cm"))+
+  labs(colour="Year of emigration")
+
+```
+
+##### Figure 26
+
+```{r Fig26, echo=FALSE}
+
+plot26 <- read1[table_nbr==160&measure1!='S'&measure2!='S'&var2_value==5&var3_value=='Resident Birth Citizen'
+                ,.(percent=as.numeric(measure1)/as.numeric(measure2))
+                ,by=.(yr=as.numeric(var1_value)
+                )]
+
+ggplot(plot26)+
+  geom_line(aes(x=yr, y=percent),color='#0083ac')+
+  labs(title = "Figure 26: Return rates vary somewhat over time"
+       , subtitle = "Proportion of NZ-born emigrants resident in NZ five years after emigration", x="Year of emigration", y = "%")+
+  theme_minimal()+
+  scale_y_continuous(limits=c(0,0.5),labels=scales::percent)
+
+```
+
+##### Figure 27
+
+```{r Fig27, echo=FALSE}
+
+plot27 <- read1[table_nbr==170&measure1!='S'&measure2!='S'&var1_value %in% c('2000','2005','2010','2015')&var3_value=='Resident Birth Citizen'
+                ,.(percent=as.numeric(measure1)/as.numeric(measure2))
+                ,by=.(yrs_till_return=as.numeric(var2_value)
+                      ,yr=as.numeric(var1_value)
+                      ,age=fcase(var4_value==0, '0-9'
+                                 ,var4_value==10,'10-19'
+                                 ,var4_value==20,'20-29'
+                                 ,var4_value==30,'30-39'
+                                 ,var4_value==40,'40-49'
+                                 ,var4_value==50,'50-59'
+                                 ,var4_value==60,'60-69'
+                                 ,var4_value==70,'70-79'
+                      )
+                )]
+plot27$age <- factor(plot27$age, levels= c('0-9'
+                                           ,'10-19'
+                                           ,'20-29'
+                                           ,'30-39'
+                                           ,'40-49'
+                                           ,'50-59'
+                                           ,'60-69'
+                                           ,'70-79'
+))
+
+ggplot(plot27)+
+  geom_line(aes(x=yrs_till_return, y=percent,color=age))+
+  labs(title = "Figure 27: Return migration is most common for those emigrating
+in their twenties"
+       , subtitle = "Proportion of NZ-born emigrants resident in NZ by year of emigration", x="Years since emigration", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(yr),ncol=2)+
+  scale_y_continuous(limits=c(0,0.6),labels=scales::percent)+
+  scale_color_manual(name = "Age at emigration", values=tsy_palette8)
+
+```
+
+
+##### Figure 28
+
+```{r Fig28, echo=FALSE}
+
+plot28 <- read1[table_nbr==180&measure1!='S'&measure2!='S'&var3_value=='Resident Birth Citizen'
+                ,.(percent=as.numeric(measure1)/as.numeric(measure2))
+                ,by=.(yrs_till_return=as.numeric(var2_value)
+                      ,age=fcase(var1_value==0, '0-9'
+                                 ,var1_value==10,'10-19'
+                                 ,var1_value==20,'20-29'
+                                 ,var1_value==30,'30-39'
+                                 ,var1_value==40,'40-49'
+                                 ,var1_value==50,'50-59'
+                                 ,var1_value==60,'60-69'
+                                 ,var1_value==70,'70-79'
+                      )
+                      ,qual=var4_value
+                )]
+
+
+plot28$age <- factor(plot28$age, levels= c('20-29'
+                                           ,'30-39'
+))
+
+plot28$qual <- factor(plot28$qual, levels = c('7+ Tertiary','4-6 Tertiary','School','None'))
+
+ggplot(plot28)+
+  geom_line(aes(x=yrs_till_return, y=percent,color=qual))+
+  labs(title = "Figure 28: And among young adult emigrees, return rates are
+higher among the tertiary-qualified"
+       , subtitle = "Proportion of 2013 NZ-born emigrants resident in New Zealand by age at emigration", x="Years since emigration", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(age),ncol=2)+
+  scale_y_continuous(limits=c(0,0.5),labels=scales::percent)+
+  scale_x_continuous(breaks=c(2,4,6,8,10))+
+  scale_color_manual(name = "Qualification level", values=tsy_palette4)
+
+```
+
+##### Figure 29
+
+```{r Fig29, echo=FALSE}
+
+plot29 <- read1[table_nbr==190
+                    &measure1!='S'
+                    &measure2!='S'
+                    &var1_value==2000
+                    &var4_value<80
+                    &is.na(var4_value)==FALSE
+                ,.(percent=as.numeric(measure1)/as.numeric(measure2))
+                ,by=.(yrs_till_return=as.numeric(var2_value)
+                      ,yr=as.numeric(var1_value)
+                      ,ethnicity=var3_value
+                      ,age=fcase(var4_value==0, '0-19'
+                                 ,var4_value==20,'20-39'
+                                 ,var4_value==40,'40-59'
+                                 ,var4_value==60,'60-79'
+                      )
+                )]
+
+plot29$age <- factor(plot29$age, levels= c('0-19'
+                                           ,'20-39'
+                                           ,'40-59'
+                                           ,'60-79'
+))
+
+ggplot(plot29)+
+  geom_line(aes(x=yrs_till_return, y=percent,color=age))+
+  labs(title = "Figure 29: Return rates are highest for 20-29 year-old Asian and
+NZ European emigrants"
+       , subtitle = "Proportion of NZ-born emigrants in 2000 resident in NZ by ethnicity", x="Years since emigration", y = "%")+
+  theme_minimal()+
+  facet_wrap(vars(ethnicity),ncol=2)+
+  scale_y_continuous(limits=c(0,0.6),labels=scales::percent)+
+  scale_color_manual(name = "Age at emigration", values=tsy_palette4)
+
+```
+
+
+## Fiscal implications of these patterns
+
+### Investment in emigrants
+
+Earlier sections showed that there is substantial emigration among each birth cohort, representing a loss of human capital developed in part from public investment. New Zealand then becomes reliant on replacing emigrants with migrants from other countries, who bring their private and public investment in their skills with them, in a kind of trade in human capital between countries. We intend to explore the human capital gained by migration in a subsequent paper.
+
+A sense of scale of lost public investment can be gained by some simple modelling, drawing on the age-expenditure profiles developed by Wright and Nguyen (2024) and published in AN24/09. For example, someone who emigrates at age 5 will have had five years of investment in them, primarily in the form of health and ECE spend. Wright and Nguyen reported that the average annual spend in 2018/19 for under-5s was $9,220.  Multiplying by five, someone to emigrate at age 5 will take a little over $46,000 of public investment in their human capital with them, assuming that education and health spending profiles are broadly stable over time. ^[This estimate should be regarded as a broad order-of-magnitude assessment with a range of caveats. Note that we use a finer breakdown of expenditure that reported in AN24/09, separating tertiary from non-tertiary education expenditure. This estimate excludes investment in the form of income support for children that is provided via parents, e.g. Working for Families tax credits. Any tax paid before emigrations is also excluded, so the estimate is gross, rather than net of tax. The use of averages also means that variation in use of especially health care is not modelled - some emigrants will have had much more spent on them than the average, others much less.] 
+
+Applying this logic to everyone under the age of 30 to emigrate in 2018 and not subsequently return, the accumulated investment in those emigrants was about $2.7 billion (the equivalent of about $4.3 billion today, adjusting for growth in health and education expenditure). Figures 31 and 32 illustrate that those who emigrate in their twenties represent the majority of the lost investment (as they have had the most time to accumulate it). Figure 31 shows that the average investment increases with age. For example, someone emigrating at age 25 in 2018 after four years of tertiary study would have had about $232,000 invested in them up to that point. And Figure 32 illustrates that because emigration is more common among over-20s, the total lost investment is concentrated among this age group.
+
+Both figures also show that the majority of investment in human capital that is lost is school and ECE spend, with tertiary education expenditure being a more minor part of the total, smaller even than accumulated health expenditure.
+
+#### Figures 30-31 {.tabset}
+
+##### Figure 30
+
+```{r Fig30, echo=FALSE}
+
+read30.1 <- read1[table_nbr==23&measure1!='S'
+                  ,.(age=as.numeric(var1_value)
+                     ,tertiary_yrs=as.numeric(var2_value)
+                     ,count=as.numeric(measure1))
+]
+
+read30.2 <- read30.1[read3,on=.(age,tertiary_yrs)]
+
+read30.3 <- read30.2[count!='NA',
+                     .(tert=sum(tertiary_spend*count)
+                       , pre_tert=sum(non_tertiary_ed_spend*count)
+                       ,hlth=sum(tot_health_spend*count)
+                       ,pop = sum(count)
+                     )
+                     ,by=.(age)]
+
+read30.4 <- read30.3[,.(age
+                      , 'Tertiary'=tert/pop
+                      , 'Pre-Tertiary Education'=pre_tert/pop
+                      , 'Health'=hlth/pop
+                      )]
+
+plot30 <- melt(read30.4,id.vars= c("age"),measure.vars=c('Tertiary','Pre-Tertiary Education','Health'))
+
+ggplot(plot30, aes(fill=variable, x=age, y=value))+
+  geom_bar(position= "stack", stat="identity")+
+  labs(title = "Figure 30: Investment is dominated by health and pre-tertiary education"
+       , subtitle = "Average accumulated expenditure on 2018 emigrants aged under 30
+who were still overseas in 2024"
+       , x="Age at emigration", y = "")+
+  theme_minimal()+
+  scale_y_continuous(labels=scales::dollar)+
+  scale_fill_manual(name = "Spend", values=tsy_palette3)
+  
+```
+
+
+##### Figure 31
+
+```{r Fig31, echo=FALSE}
+
+read31.1 <- read1[table_nbr==23&measure1!='S'
+                  ,.(age=as.numeric(var1_value)
+                     ,tertiary_yrs=as.numeric(var2_value)
+                     ,count=as.numeric(measure1))
+                  ]
+
+read31.2 <- read31.1[read3,on=.(age,tertiary_yrs)]
+
+read31.3 <- read31.2[,
+                     .('Tertiary'=tertiary_spend*count/1000000
+                       , 'Pre-Tertiary Education'=non_tertiary_ed_spend*count/1000000
+                       ,'Health'=tot_health_spend*count/1000000
+                       )
+                     ,by=.(age)]
+
+plot31 <- melt(read31.3,id.vars= c("age"),measure.vars=c('Tertiary','Pre-Tertiary Education','Health'))
+
+ggplot(plot31, aes(fill=variable, x=age, y=value))+
+  geom_bar(position= "stack", stat="identity")+
+  labs(title = "Figure 31: Emigrants take substantial investment with them,
+especially those in their twenties"
+       , subtitle = "Total accumulated expenditure on 2018 emigrants aged under 30
+who were still overseas in 2024"
+       , x="Age at emigration", y = "$m")+
+  theme_minimal()+
+    scale_fill_manual(name = "Spend", values=tsy_palette3)
+
+```
+
+
+### Incomes and tax payments of returnees
+
+The NZ-born diaspora is often thought of as an asset, or at least a contingent asset. Contingent on return to New Zealand, those with overseas experience can bring back skills, networks and experience that can contribute economic value and generate fiscal revenue. Using census data from 1986-2013, Alimi, Mare and Poot (2022) reported that returned New Zealanders earn incomes similar to those of equivalently educated NZ-born non-migrants. And given that returnees are more likely to have higher qualifications, we might expect higher incomes on average (and thus high income tax receipts) among returned New Zealand emigrants compared to non-emigrants. This is especially so for any New Zealanders who have studied abroad, given the finding from Poot and Roskruge (2013) that New Zealanders with overseas tertiary study earn more than New Zealanders with local qualifications.
+
+Figure 32 illustrates that many current residents have spent time overseas at some point in the last 25 years.^[Figures 32-34 uses the 9/12 month calendar year definition to define residence in New Zealand, and counts as an ‘OE year’ any in which someone spends more than 3 months outside of New Zealand. This means that spells overseas are included even if they do not meet the official threshold for an emigration (the 12/16 rule).] Among those aged 40-44 in 2023, about a third of those living in New Zealand have been overseas for three or more months in at least one calendar year since the data starts in 1999 (at which point they were aged 16-20). Subsequent charts focus on this group as it contains the most complete information - younger age groups may still be in the process of returning, and we lack information about the core OE years of the 20s for people currently aged over 45.
+
+Figure 33 uses linked tax information to depict the market incomes of residents with and without OEs, confirming that returned New Zealander have higher incomes than those never to have left. There is little difference depending on the length of the OE - with the exception that those with the longest OEs (10 or more years) tend to have slightly lower incomes than people with shorter OEs (though still higher than that of people never to have lived overseas). We have not attempted to estimate any kind of causal relationship, so this is purely a descriptive observation - whether an OE causes higher incomes on return is a complex question that would require much more work to investigate.
+
+Figure 34 illustrates the implications of the simple descriptive analysis for government finances. We know from earlier work that governments are quite dependent on higher income people, especially those in the peak earning years, to provide the net revenue contributions necessary to fund the net expenditure on others, especially older and younger New Zealanders (Wright and Nguyen 2024, Aziz et al 2016). Figure 32 elaborates on this point to show that of the personal tax paid by NZ-born residents aged 40-44, 42% is paid by people who have had an OE. Those who have lived elsewhere also pay more tax on average than those New Zealanders never to have left. This shows that Government’s existing Pay-As-You-Go fiscal strategy is partly dependent on ensuring a return to New Zealand remains common among the many New Zealanders who leave.
+
+
+#### Figures 32-34 {.tabset}
+
+##### Figure 32
+
+```{r Fig32, echo=FALSE}
+
+plot32 <- read1[table_nbr==20&measure1!='S'
+                &var1_value==2023
+                &as.numeric(var2_value)<95
+                ,.(total=sum(as.numeric(measure1))/1000)
+                , by=.(age=fcase(var2_value==0,'0-04'
+                                 ,var2_value==5,'05-09'
+                                 ,var2_value==10,'10-14'
+                                 ,var2_value==15,'15-19'
+                                 ,var2_value==20,'20-24'
+                                 ,var2_value==25,'25-29'
+                                 ,var2_value==30,'30-34'
+                                 ,var2_value==35,'35-39'
+                                 ,var2_value==40,'40-44'
+                                 ,var2_value==45,'45-49'
+                                 ,var2_value==50,'50-54'
+                                 ,var2_value==55,'55-59'
+                                 ,var2_value==60,'60-64'
+                                 ,var2_value==65,'65-69'
+                                 ,var2_value==70,'70-74'
+                                 ,var2_value==75,'75-79'
+                                 ,var2_value==80,'80-84'
+                                 ,var2_value==85,'85-89'
+                                 ,var2_value==90,'90-94'
+                                  )
+                       ,OE_years = fcase(var4_value=='Diasporic Birth Citizen', 'Diaspora'
+                                         ,var3_value==0,'Resident - No OE'
+                                         ,var3_value=='NULL','Resident - No OE'
+                                         ,var3_value %in% c(1:2),'Resident - 1-2 Year OE'
+                                         ,var3_value %in% c(3:4),'Resident - 3-4 Year OE'
+                                         ,var3_value %in% c(5:9),'Resident - 5-9 Year OE'
+                                         ,default='Resident - 10+ Year OE'))
+]
+
+plot32$OE_years <- factor(plot32$OE_years, levels= c('Diaspora'
+                                                     ,'Resident - 10+ Year OE'
+                                                     ,'Resident - 5-9 Year OE'
+                                                     ,'Resident - 3-4 Year OE'
+                                                     ,'Resident - 1-2 Year OE'
+                                                     ,'Resident - No OE'))
+
+ggplot(plot32, aes(fill=OE_years, x=age, y=total)) +
+  geom_bar(position= "stack", stat="identity")+
+  labs(title = "Figure 32: Returned OErs comprise up to a third of current residents"
+       , subtitle = "Thousands of NZ birth citizens in 2023 by residence and prior years overseas"
+       , x="Age Group", y = "N")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle=-90, hjust=1, vjust=0.5))+
+  scale_fill_manual(name = "Status", values=tsy_palette6)
+
+```
+
+##### Figure 33
+
+```{r Fig33, echo=FALSE}
+
+read33.1 <- read1[table_nbr==21&measure1!='S'&measure2!='S'&var2_value>0
+                ,.(subtotal=as.numeric(measure1))
+                ,by=.(income=as.numeric(var2_value)
+                      ,oe=var3_value
+                      )
+                ]
+
+read33.2 <- read1[table_nbr==21&measure1!='S'&measure2!='S'&var2_value>0
+                  ,.(total=sum(as.numeric(measure1)))
+                  ,by=.(oe=var3_value)
+]
+
+
+read33.3 <- read33.2[read33.1,on=.(oe)]
+
+plot33 <- read33.3[,.(oe,income,percent=subtotal/total)]
+
+plot33$oe <- factor(plot33$oe, levels= c('10+ Year OE'
+                                         ,'5-9 Year OE'
+                                         ,'3-4 Year OE'
+                                         ,'1-2 Year OE'
+                                         ,'No OE'))
+
+ggplot(plot33)+
+  geom_line(aes(color=oe, x=income, y=percent))+
+  labs(title = "Figure 33: Returned OErs have higher market incomes on average"
+       , subtitle = "Proportion of resident birth citizens age 40-44 in 2023"
+       , x="Market income in tax year ending March 2023 (excluding 0 )", y = "%")+
+  theme_minimal()+
+  scale_color_manual(name = "OE", values=tsy_palette5)+
+  scale_y_continuous(limits=c(0,0.15),labels=scales::percent)+
+  scale_x_continuous(labels=scales::dollar_format())
+
+```
+
+##### Figure 34
+
+```{r Fig34, results='asis', echo=FALSE}
+
+cat('**Figure 34: Among NZ-born aged 40-44, returned OErs contributed 42% of all personal tax in tax year 2023**')
+
+read34.1 <- read1[table_nbr==22&measure1!='S'&measure2!='S'
+                  ,.(taxsum=as.numeric(var2_value)*as.numeric(measure1)
+                     ,count=as.numeric(measure1)
+                     , OE=var3_value)
+]
+
+read34.2 <- read34.1[,.(join='join'
+                        ,tax=sum(taxsum)
+                        ,people=sum(count))
+                     ,by=.(OE)]
+
+read34.3 <- read34.2[,.(join='join'
+                        ,total_tax=sum(tax)
+                        ,total_people=sum(people))]
+
+read34.4 <- read34.3[read34.2,on=.(join)]
+
+plot34 <- read34.4[,.('People'=round(people,-2)
+                      , 'Total Tax ($M)'=round(tax/1000000,-1)
+                      ,'Proportion of People'=people/total_people
+                      ,'Proportion of Tax'=tax/total_tax
+                      ,'Average Tax ($)'=round(tax/people,-1)
+                      )
+                   ,by=.(OE)]
+
+plot34$OE <- factor(plot34$OE,levels=c('No OE'
+                                       ,'1-2 Year OE'
+                                       ,'3-4 Year OE'
+                                       ,'5-9 Year OE'
+                                       ,'10+ Year OE'))
+
+plot34.1 <-plot34[,.('People'
+                     ,'Total Tax ($M)'
+                     , 'Proportion of People'
+                     , 'Propotion of Tax'
+                     , 'Average Tax'
+                     , OE
+                     , sort=as.numeric(OE)
+                     )]
+
+reactable(plot34,columns=list(
+  'People'=colDef(format=colFormat(separators=TRUE))          
+  ,'Total Tax ($M)'=colDef(format=colFormat(digits=0, separators=TRUE))
+  ,'Proportion of People'=colDef(format=colFormat(percent=TRUE,digits=1))
+  ,'Proportion of Tax'=colDef(format=colFormat(percent=TRUE,digits=1))
+  ,'Average Tax ($)'=colDef(format=colFormat(digits=0, separators=TRUE))
+)
+, defaultSorted=list("Proportion of People"='desc'))
+
+```
+
+## Conclusion and next steps
+
+This paper has provided the first use of the transnational dataset developed and described in AN25/09. It illustrates that people born in New Zealand commonly leave and often return, with these movements being fiscally consequential.
+
+The analysis illustrates that the large-scale loss of human capital to emigration necessitates replacement by equivalent immigration. A draft paper in development aims to provide similar analysis of the fiscal implications of the foreign-born. 
+
+In future, this analysis could be extended to model the full lifetime fiscal impact of migrants relative to the New-Zealand born.
+
+## Bibliography
+
+Alimi, O. B., Mare, D. C., & Poot, J. (2022). Immigration, skills and changing urban inequality in New Zealand. The Australian Journal of Labour Economics, 25(1), 81-110. Retrieved from https://ajle.org/index.php/ajle_home/article/view/9
+
+Aziz, O., Gemmell, N., & Laws, A. (2016). Income and Fiscal Incidence by Age and Gender: Some Evidence from New Zealand. Review of Income and Wealth, 62(3), 534-558. doi:https://doi.org/10.1111/roiw.12165
+
+Bryant, J., & Law, D. (2004). New Zealand's Diaspora and Overseas-born Population. New Zealand Treasury Working Paper 04/13. Wellington: The Treasury. Retrieved from https://www.treasury.govt.nz/publications/wp/new-zealands-diaspora-and-overseas-born-population-wp-04-13
+
+Carey, D. (2019). Improving well-being in New Zealand through migration. Paris: OECD Publishing. doi:https://doi.org/10.1787/18151973
+
+Department of Labour. (2012). Permanent and Long Term Migration: The Big Picture. Wellington: Department of Labour. Retrieved from https://www.mbie.govt.nz/dmsdocument/2749-permanent-and-long-lerm-migration-pdf
+
+Haig, R. (2010). Working Across the Ditch: New Zealanders in Australia. Wellington: Department of Labour. Retrieved from https://ojs.victoria.ac.nz/LEW/article/view/1703/1546
+
+Ministry of Education. (2017). Young domestic graduate outcomes - destinations. Wellington: Ministry of Education. Retrieved from https://www.educationcounts.govt.nz/__data/assets/pdf_file/0003/181776/Young-graduate-outcomes-destinations-factsheet-June-2017b.pdf
+
+Poot, J., & Roskruge, M. (2013). Internationalisation of Education and Returns in the Labour Market. IZA DP No. 7696. Bonn: IZA. Retrieved from https://docs.iza.org/dp7696.pdf
+
+The Treasury. (2025). He Tirohanga Mokopuna: Statement on the Long-Term Fiscal Position. Wellington: The Treasury. Retrieved from https://www.treasury.govt.nz/publications/ltfp/he-tirohanga-mokopuna-2025
+
+Wright, T., & Nguyen, H. (2024). Fiscal incidence and income inequality by age: Results for New Zealand in tax year 2018/19. Analytical Note 24/09. Wellington: The Treasury. Retrieved from https://www.treasury.govt.nz/sites/default/files/2024-11/an24-09.pdf
+
+
+
